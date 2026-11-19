@@ -1,0 +1,1203 @@
+{
+  "version": "2026-11",
+  "taxonomyVersion": "2026-11",
+  "note": "本地精选市场题库。仅使用调研报告中出现的公开来源；editorial 条目为内部通用训练题，无外部 URL。样本频次不代表市场统计。",
+  "items": [
+    {
+      "id": "agent-workflow-boundary",
+      "rolePack": "agent",
+      "topic": "agent-core",
+      "kind": "project",
+      "question": "挑一个你做过的 Agent 项目：先用两分钟说清业务问题、整体链路，然后回答为什么这里必须用 Agent，而不是一条固定 Workflow 或几次普通模型调用。",
+      "followups": [
+        "这条链路里哪一步必须由模型决策，哪一步被你写死成代码？边界是怎么定的？",
+        "如果下周要求你把它改成固定 Workflow，最先坏掉的是哪个环节？",
+        "你个人负责哪一层？用提交记录、模块归属或指标说明，不要说“我参与了”。"
+      ],
+      "expectedPoints": [
+        "能指出输入开放性与步数不确定性，而不是背 Agent 定义",
+        "明确模型决策点与确定性代码的边界",
+        "给出不用 Agent 时的具体失败场景",
+        "个人贡献可验证：模块、代码、指标"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/921590204903723008",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["agent", "架构", "workflow", "选型"]
+    },
+    {
+      "id": "agent-react-code-mapping",
+      "rolePack": "agent",
+      "topic": "agent-core",
+      "kind": "principle",
+      "question": "ReAct 里的 Thought、Action、Observation 在你的代码里分别对应什么对象和字段？请按真实实现讲，不要背概念。",
+      "followups": [
+        "Thought 是自由文本还是结构化字段？两种做法各自带来什么问题？",
+        "Observation 很长时你在哪一层截断，截断后模型怎么知道还有内容？",
+        "模型连续两步输出同一个 Action、参数也一样，你的循环靠什么停下来？"
+      ],
+      "expectedPoints": [
+        "能映射到具体消息结构或状态机字段",
+        "理解自由文本 Thought 的可解释性与结构化 Action 的可校验性取舍",
+        "Observation 有预算、截断标记和后续取回路径",
+        "终止条件包含重复检测，而不是只靠最大步数"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/938174747332956160",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["react", "thought", "action", "observation", "循环"]
+    },
+    {
+      "id": "agent-loop-detection",
+      "rolePack": "agent",
+      "topic": "agent-core",
+      "kind": "incident",
+      "question": "讲一次你的 Agent 表面上一直在跑、实际上没有进展的经历：怎么发现的，trace 里是什么样子，最后怎么修的？",
+      "followups": [
+        "你用什么信号判断“没有进展”：步数、token、工具调用重复率还是状态哈希？",
+        "当时有没有对用户造成可见影响？怎么止损的？",
+        "修完之后加了什么回归用例，保证不会再出现？"
+      ],
+      "expectedPoints": [
+        "有具体触发条件（工具返回空、参数抖动、目标不可达）",
+        "定位手段是 trace 与日志，而不是猜",
+        "止损动作明确（熔断、降级、人工接管）",
+        "修复后有回归测试或监控指标"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/917353328109944832",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["死循环", "trace", "观测", "incident"]
+    },
+    {
+      "id": "agent-plan-execute-choice",
+      "rolePack": "agent",
+      "topic": "agent-core",
+      "kind": "principle",
+      "question": "ReAct 和 Plan-and-Execute 你怎么选？说一个你实际做过的判断，以及事后看这个选择对不对。",
+      "followups": [
+        "如果任务中途环境变化，Plan-and-Execute 的重规划代价你怎么控制？",
+        "两个方案在 token 成本和延迟上的差别，你测过吗？数字是多少？",
+        "有没有混合使用的场景？混合时谁来触发切换？"
+      ],
+      "expectedPoints": [
+        "按任务可分解性、环境稳定性、失败代价来选择",
+        "知道重规划成本与执行确定性的权衡",
+        "有实测的成本或延迟数据，或可解释的估算",
+        "能说明切换条件，而不是全程只用一种"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://mj.mianlingai.com/interview/bytedance-volcano-engine-agent-autumn-first-round-2923108/",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["plan-and-execute", "react", "规划", "重规划"]
+    },
+    {
+      "id": "agent-no-agent-scenarios",
+      "rolePack": "agent",
+      "topic": "agent-core",
+      "kind": "principle",
+      "question": "哪些场景你明确不会用 Agent？请举一个你拒绝过、或者用完又换回普通方案的例子。",
+      "followups": [
+        "当时提出用 Agent 的人想要什么？你用什么理由说服他的？",
+        "如果业务方坚持要“智能”，你会在哪一层做折中？",
+        "换成普通方案后，效果和成本具体差多少？"
+      ],
+      "expectedPoints": [
+        "能说清确定性流程、强合规、低延迟、可预算场景不适合 Agent",
+        "有真实取舍案例，而不是抽象罗列",
+        "能用数据或风险说明为什么拒绝",
+        "折中方案具体（局部模型调用加代码编排）"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/942593751954776064",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["agent", "适用边界", "选型"]
+    },
+    {
+      "id": "agent-multi-agent-necessity",
+      "rolePack": "agent",
+      "topic": "agent-core",
+      "kind": "principle",
+      "question": "多 Agent 真的必要吗？单 Agent 加 Workflow 在什么情况下确实不够，请给出你的判断标准。",
+      "followups": [
+        "多 Agent 之后，上下文和状态是怎么在角色之间传的？",
+        "角色之间的冲突或重复工作怎么收敛？谁做最终裁决？",
+        "多 Agent 带来的成本和延迟增加，你怎么向业务解释？"
+      ],
+      "expectedPoints": [
+        "按职责隔离、上下文隔离、并行需求判断是否值得拆",
+        "有状态传递与裁决机制，而不是让 Agent 自由对话",
+        "承认多 Agent 常被过度设计",
+        "能给出成本与收益的量化视角"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/944882264687534080",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["多智能体", "multi-agent", "架构"]
+    },
+    {
+      "id": "agent-project-evaluation",
+      "rolePack": "agent",
+      "topic": "agent-core",
+      "kind": "evaluation",
+      "question": "你怎么证明这个 Agent 比上一版好？指标、评测集和线上证据分别是什么？",
+      "followups": [
+        "评测集多少条、怎么来的、谁标注的？",
+        "如果离线指标涨了但线上没涨，你先查什么？",
+        "失败 case 怎么回流成回归集？多久跑一次？"
+      ],
+      "expectedPoints": [
+        "任务成功率有可操作定义（含判定规则）",
+        "评测集来源、规模、标注方式清楚",
+        "离线与线上差异有归因路径",
+        "失败回流与回归机制存在且被执行"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/941713098040221696",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["评估", "指标", "评测集", "回归"]
+    },
+    {
+      "id": "agent-step-budget-incident",
+      "rolePack": "agent",
+      "topic": "agent-core",
+      "kind": "incident",
+      "question": "讲一次因为步数预算、超时或并发限制设置不当导致的问题：现象、根因、你改了什么？",
+      "followups": [
+        "预算值当时是怎么定的？拍脑袋还是有数据？",
+        "限制触发后用户看到什么？有没有明确的兜底文案或转人工？",
+        "现在你会怎么定这个预算，给出计算过程。"
+      ],
+      "expectedPoints": [
+        "有具体数值和触发条件",
+        "根因落在预算、超时或并发配置，而非模型能力",
+        "兜底路径明确，用户不会卡死",
+        "能给出基于 P95 延迟和任务步数分布的估算方法"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://codewd.com/article/z23yryam",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["超时", "预算", "并发", "incident"]
+    },
+    {
+      "id": "mcp-project-value",
+      "rolePack": "agent",
+      "topic": "mcp-tools",
+      "kind": "project",
+      "question": "你项目里的 MCP 解决了什么用普通 API 或 Function Calling 解决不了的问题？请结合具体工具说。",
+      "followups": [
+        "这些工具如果继续用 Function Calling 硬编码，维护成本具体高在哪里？",
+        "接入 MCP 之后多了哪些新的失败模式？",
+        "有没有评估过 MCP 的额外开销，值不值？"
+      ],
+      "expectedPoints": [
+        "能说出复用、跨客户端、工具发现等具体收益",
+        "承认 MCP 引入连接、授权、版本等新问题",
+        "有迁移前后对比（工具数、改动量、接入时间）",
+        "不是只背 MCP 定义"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/938174747332956160",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["mcp", "工具", "function calling"]
+    },
+    {
+      "id": "mcp-tool-layer-refactor",
+      "rolePack": "agent",
+      "topic": "mcp-tools",
+      "kind": "project",
+      "question": "讲一次工具层重构：从硬编码函数调用迁到 MCP server，或者反过来。你为什么要动它，怎么保证不破坏线上？",
+      "followups": [
+        "迁移期间两套工具怎么共存？灰度怎么切？",
+        "工具描述（schema、description）改了之后，模型选择行为怎么回归？",
+        "回滚方案是什么？"
+      ],
+      "expectedPoints": [
+        "重构动因是具体痛点（工具膨胀、多客户端复用、权限集中）",
+        "有共存、灰度与回滚方案",
+        "工具描述变更纳入评测",
+        "有迁移完成后的量化结果"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://mj.mianlingai.com/interview/bytedance-agent-development-first-round-939623386806751232/",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["mcp", "重构", "工具层", "灰度"]
+    },
+    {
+      "id": "mcp-tool-api-boundary",
+      "rolePack": "agent",
+      "topic": "mcp-tools",
+      "kind": "principle",
+      "question": "Tool、Function Calling、MCP、Skill 这四个概念的边界是什么？请用你项目里的东西各举一例。",
+      "followups": [
+        "MCP 的 Host、Client、Server 分别负责什么？谁做权限校验？",
+        "Skill 和 Tool 的差别只是描述文件吗？",
+        "同一个能力，你会把它做成 Tool 还是 Skill？判断依据是什么？"
+      ],
+      "expectedPoints": [
+        "区分协议层（MCP）、调用机制（Function Calling）、能力单元（Tool 与 Skill）",
+        "能说清 Host、Client、Server 职责",
+        "知道 Skill 偏流程知识与渐进加载，Tool 偏可执行动作",
+        "判断依据可落地"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/921590204903723008",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["mcp", "host", "client", "server", "skill", "tool"]
+    },
+    {
+      "id": "mcp-100-tools-routing",
+      "rolePack": "agent",
+      "topic": "mcp-tools",
+      "kind": "principle",
+      "question": "工具数量到上百个时，你怎么让模型选对？请说清筛选、路由和误选处理。",
+      "followups": [
+        "工具描述怎么写才能减少误选？举一个你改过的描述。",
+        "先粗筛再精排，还是分层命名空间？各自的失败模式是什么？",
+        "误选率你怎么测？"
+      ],
+      "expectedPoints": [
+        "有工具分组、命名空间或两级路由等具体机制",
+        "工具 schema 与 description 的写法有约束（动词开头、边界、反例）",
+        "误选有回退（重问、澄清、候选对比）",
+        "误选率有度量方式"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/938174747332956160",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["工具选择", "路由", "误选", "mcp"]
+    },
+    {
+      "id": "mcp-lifecycle",
+      "rolePack": "agent",
+      "topic": "mcp-tools",
+      "kind": "principle",
+      "question": "MCP 从获取工具列表到真正发起调用，完整链路经过哪些角色和消息？断线或工具变更时怎么处理？",
+      "followups": [
+        "initialize 阶段协商了什么？版本不一致会怎样？",
+        "tools/list 的结果要不要缓存？缓存失效策略是什么？",
+        "服务端工具热更新后，客户端和模型怎么感知？"
+      ],
+      "expectedPoints": [
+        "能描述 initialize、tools/list、tools/call、结果回传的顺序",
+        "知道能力协商与版本兼容",
+        "有列表缓存与刷新策略",
+        "工具变更时有明确失效路径"
+      ],
+      "sourceTitle": "公开资料汇编参考",
+      "sourceUrl": "https://zchary1106.github.io/agent-interview-hub/question-signals.html",
+      "evidenceLevel": "edited",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-02-17",
+      "revision": 2,
+      "tags": ["mcp", "协议", "initialize", "tools/list"]
+    },
+    {
+      "id": "mcp-skill-progressive-loading",
+      "rolePack": "agent",
+      "topic": "mcp-tools",
+      "kind": "principle",
+      "question": "Skill 的渐进式加载和 MCP 的工具加载，Token 成本差在哪里？什么规模下这个差别开始变得重要？",
+      "followups": [
+        "渐进式加载具体加载哪几层？元数据里放什么？",
+        "工具描述全部塞进系统提示，上百个工具大概占多少 token？你算过吗？",
+        "省下来的 token 会不会换来更多调用轮次？"
+      ],
+      "expectedPoints": [
+        "能区分工具 schema 常驻与按需加载内容",
+        "有量级估算，而不是“会省很多”",
+        "知道加载层数增加带来的额外轮次与延迟",
+        "能给出适用规模判断"
+      ],
+      "sourceTitle": "公开资料汇编参考",
+      "sourceUrl": "https://anxforever.cn/blog/interview-real-questions",
+      "evidenceLevel": "edited",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-02-17",
+      "revision": 2,
+      "tags": ["skill", "token", "渐进加载", "成本"]
+    },
+    {
+      "id": "mcp-param-error-handling",
+      "rolePack": "agent",
+      "topic": "mcp-tools",
+      "kind": "incident",
+      "question": "工具参数不合法、返回的 JSON 无法解析、调用超时，你的处理链分别是什么？讲一次真实踩坑。",
+      "followups": [
+        "参数校验放在模型侧还是工具侧？两边都做会不会重复？",
+        "JSON 解析失败时，原样回灌给模型还是先修复？",
+        "超时后重试几次？重试时上下文怎么说明？"
+      ],
+      "expectedPoints": [
+        "校验在工具或服务端做权威判断，模型侧只做提示性约束",
+        "解析失败有结构化错误回传，不是抛异常中断",
+        "重试有次数、退避和终止条件",
+        "有真实案例与改进"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://interviewx.cn/interview/2056",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["参数校验", "json", "超时", "重试", "incident"]
+    },
+    {
+      "id": "mcp-idempotent-retry",
+      "rolePack": "agent",
+      "topic": "mcp-tools",
+      "kind": "incident",
+      "question": "重试怎么保证幂等？请讲一次重复副作用真的发生、或者差一点发生的事。",
+      "followups": [
+        "幂等键怎么生成？由模型生成还是代码生成？",
+        "写操作和读操作的幂等策略有什么不同？",
+        "工具本身不支持幂等时，你怎么办？"
+      ],
+      "expectedPoints": [
+        "幂等键由可复现的输入生成，不依赖模型自由发挥",
+        "区分读、写与不可逆操作",
+        "不支持幂等的工具有去重表、补偿或禁止自动重试",
+        "有具体事故或演练细节"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/941632179652599808",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["幂等", "重试", "副作用", "incident"]
+    },
+    {
+      "id": "mcp-permission-layer",
+      "rolePack": "agent",
+      "topic": "mcp-tools",
+      "kind": "incident",
+      "question": "工具权限在模型层还是程序层校验？模型能不能绕过？讲一次你发现的越权风险或绕过尝试。",
+      "followups": [
+        "用户身份怎么传到工具里？模型能不能自己改这个身份？",
+        "高危工具（写文件、发消息、支付）你怎么分级？",
+        "审批或确认流程是阻断式还是事后审计？"
+      ],
+      "expectedPoints": [
+        "权限在服务端按用户身份校验，模型输出不构成授权",
+        "身份来自会话而非模型参数",
+        "高危工具有分级、确认或沙箱",
+        "有被发现并修复的真实风险"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/feed/main/detail/73bad9d11163476d8cfce0f26c1c04f5",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["权限", "越权", "沙箱", "安全"]
+    },
+    {
+      "id": "mcp-tool-selection-eval",
+      "rolePack": "agent",
+      "topic": "mcp-tools",
+      "kind": "evaluation",
+      "question": "你怎么衡量工具选择准确率？评测集怎么造，误选和该调不调怎么区分？",
+      "followups": [
+        "一条评测样本包含哪些字段？",
+        "模型说“不需要工具”但实际需要，这类样本怎么标？",
+        "工具描述一改就要重跑吗？成本怎么控制？"
+      ],
+      "expectedPoints": [
+        "有明确的样本结构与判定口径",
+        "区分误选、漏选、参数错误三类",
+        "评测可回归、可增量",
+        "知道描述变更需要回归"
+      ],
+      "sourceTitle": "公开资料汇编参考",
+      "sourceUrl": "https://web.reeddaily.com/posts/653181",
+      "evidenceLevel": "edited",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-02-17",
+      "revision": 2,
+      "tags": ["工具选择", "评测", "准确率"]
+    },
+    {
+      "id": "rag-project-scope",
+      "rolePack": "agent",
+      "topic": "rag",
+      "kind": "project",
+      "question": "说清你做的知识库：规模、文档类型、查询类型，以及最难的检索问题是什么。",
+      "followups": [
+        "多少文档、多少 chunk、平均长度？",
+        "用户问的是事实查询、比较还是流程类问题？",
+        "哪类问题你的方案根本解决不了？"
+      ],
+      "expectedPoints": [
+        "给出规模与类型的真实数字",
+        "能区分查询类型对方案的影响",
+        "承认方案边界",
+        "有最难 case 的具体描述"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/feed/main/detail/fc061fe55af84effb8014ed6c60db92d",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["rag", "知识库", "检索", "规模"]
+    },
+    {
+      "id": "rag-layer-attribution",
+      "rolePack": "agent",
+      "topic": "rag",
+      "kind": "principle",
+      "question": "假设一个 RAG 系统给出了错误答案，你怎么判断问题出在切分、召回、重排还是生成？请给出可执行的定位步骤。",
+      "followups": [
+        "给模型喂正确文档后能答对，能证明 embedding 没问题吗？",
+        "召回率上升但答案准确率下降，可能是什么原因？",
+        "你会先看哪几个指标，顺序是什么？"
+      ],
+      "expectedPoints": [
+        "有分层定位方法（gold doc 注入、逐层替换）",
+        "知道“喂对文档能答对”只排除生成层，不排除召回",
+        "能解释召回上升带来噪声增加、上下文被挤占",
+        "指标顺序有理由"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/feed/main/detail/0503d45073494879bbe91f5fccd6efbe",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 3,
+      "tags": ["rag", "切分", "召回", "重排", "生成", "归因"]
+    },
+    {
+      "id": "rag-hybrid-fusion",
+      "rolePack": "agent",
+      "topic": "rag",
+      "kind": "principle",
+      "question": "BM25 和向量召回怎么融合？TopK、RRF 参数你是怎么定的？",
+      "followups": [
+        "两路分数不可比，你怎么归一化或者绕开归一化？",
+        "TopK 定大了会怎样？你测过不同 TopK 的效果曲线吗？",
+        "重排模型上了之后，召回阶段还需要这么大 TopK 吗？"
+      ],
+      "expectedPoints": [
+        "知道 RRF 免归一化的原理与 k 值作用",
+        "参数有实验依据或明确推理",
+        "理解 TopK 与噪声、延迟、上下文预算的关系",
+        "融合后仍有重排环节"
+      ],
+      "sourceTitle": "公开资料汇编参考",
+      "sourceUrl": "https://leetcode.cn/discuss/post/QFqU0R/",
+      "evidenceLevel": "edited",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-02-17",
+      "revision": 2,
+      "tags": ["bm25", "向量", "rrf", "topk", "混合检索"]
+    },
+    {
+      "id": "rag-why-not-full-scan",
+      "rolePack": "agent",
+      "topic": "rag",
+      "kind": "principle",
+      "question": "为什么不每次直接把整个知识库塞给模型，或者每次全量扫描？请从成本、延迟和效果三方面算一下。",
+      "followups": [
+        "长上下文模型出来之后，这个结论有没有变化？",
+        "什么规模下全量塞反而更简单可靠？",
+        "你怎么估算一次查询的 token 成本和 P95 延迟？"
+      ],
+      "expectedPoints": [
+        "有量级估算（文档量乘平均长度）",
+        "知道长上下文仍有注意力衰减与成本问题",
+        "承认小规模场景全量可行",
+        "成本与延迟估算方法具体"
+      ],
+      "sourceTitle": "公开资料汇编参考",
+      "sourceUrl": "https://anxforever.cn/blog/interview-real-questions",
+      "evidenceLevel": "edited",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-02-17",
+      "revision": 2,
+      "tags": ["上下文", "成本", "全量扫描", "长上下文"]
+    },
+    {
+      "id": "rag-recall-up-accuracy-down",
+      "rolePack": "agent",
+      "topic": "rag",
+      "kind": "incident",
+      "question": "假设一个 RAG 系统的检索召回率提高了，但最终答案的准确率反而下降。你会怎么定位原因并修复？如果遇到过类似情况，可以结合实际经历说明。",
+      "followups": [
+        "你怎么确认是噪声挤占上下文，而不是重排把正确文档排掉了？",
+        "修复手段是调 TopK、加过滤还是改重排？为什么选这个？",
+        "修复后用什么指标验证没有回退？"
+      ],
+      "expectedPoints": [
+        "有具体现象与数据变化",
+        "根因分析到上下文预算、噪声或重排失效",
+        "修复手段与根因对应",
+        "有回归验证"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/feed/main/detail/3d3ef7b926394f7ba083d657d5e7c72d",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 3,
+      "tags": ["召回率", "准确率", "噪声", "incident"]
+    },
+    {
+      "id": "rag-format-slicing",
+      "rolePack": "agent",
+      "topic": "rag",
+      "kind": "incident",
+      "question": "扫描件 PDF、大表格、无标题 Markdown，你分别怎么切？讲一个切坏了导致答错的例子。",
+      "followups": [
+        "表格切开后表头丢了，你怎么补？",
+        "扫描件走 OCR 还是多模态？错误率怎么控？",
+        "chunk 之间要不要重叠？重叠多少，为什么？"
+      ],
+      "expectedPoints": [
+        "按结构切（标题层级、表格行组、页与栏），而不是固定字数",
+        "表格保留表头与单位",
+        "OCR 与多模态有质量校验",
+        "有切坏的实例与修正"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://codewd.com/article/z23yryam",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["切分", "markdown", "表格", "ocr", "chunk"]
+    },
+    {
+      "id": "rag-eval-set",
+      "rolePack": "agent",
+      "topic": "rag",
+      "kind": "evaluation",
+      "question": "RAG 的评测集怎么建？多少条、覆盖哪些类型、谁标注、怎么防作弊？",
+      "followups": [
+        "一个问题对应多个正确文档时，recall 怎么算？",
+        "标注一致性怎么保证？",
+        "评测集多久更新一次，怎么防止过拟合？"
+      ],
+      "expectedPoints": [
+        "样本覆盖事实、比较、流程、否定与无答案",
+        "有标注规范与一致性检查",
+        "指标定义明确（hit@k、MRR、答案正确率）",
+        "有更新与留出集机制"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/941713098040221696",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["评测", "recall", "标注", "rag"]
+    },
+    {
+      "id": "memory-project-design",
+      "rolePack": "agent",
+      "topic": "memory",
+      "kind": "project",
+      "question": "你的 Agent 记忆是怎么设计的？工作记忆、会话状态和长期记忆分别存什么、存在哪？",
+      "followups": [
+        "长期记忆的写入是谁决定的：模型、规则还是用户？",
+        "记忆怎么检索回来？和 RAG 有什么区别？",
+        "记忆错了怎么删、怎么纠？"
+      ],
+      "expectedPoints": [
+        "三层职责清晰、存储位置明确",
+        "写入有策略（触发条件、去重、置信度）",
+        "检索有召回路径",
+        "有删除与纠正机制"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://web.reeddaily.com/posts/408432",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["记忆", "工作记忆", "长期记忆", "状态"]
+    },
+    {
+      "id": "memory-three-layers",
+      "rolePack": "agent",
+      "topic": "memory",
+      "kind": "principle",
+      "question": "工作记忆、会话状态、长期记忆的边界在哪里？为什么不能都塞进上下文？",
+      "followups": [
+        "会话状态里哪些字段必须结构化，哪些可以是自然语言？",
+        "长期记忆一次召回几条？怎么排序？",
+        "跨会话记忆的隐私边界怎么划？"
+      ],
+      "expectedPoints": [
+        "按生命周期与访问频率区分",
+        "结构化状态用于确定性恢复",
+        "长期记忆有召回预算",
+        "隐私与作用域有考虑"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/feed/main/detail/0503d45073494879bbe91f5fccd6efbe",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["记忆", "上下文", "状态", "隐私"]
+    },
+    {
+      "id": "memory-truncation-strategy",
+      "rolePack": "agent",
+      "topic": "memory",
+      "kind": "principle",
+      "question": "长会话超出上下文预算时，你怎么截断或压缩？压缩后怎么验证关键约束没丢？",
+      "followups": [
+        "截断按轮次、按 token 还是按重要性？",
+        "系统提示里的硬约束被压缩掉了会怎样？",
+        "压缩本身要不要再过一次模型？成本和失真怎么权衡？"
+      ],
+      "expectedPoints": [
+        "分层保留：系统约束、当前任务、最近对话、可丢弃历史",
+        "压缩有校验（关键实体与约束回读）",
+        "知道摘要式压缩的失真风险",
+        "有预算计算"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://mj.mianlingai.com/interview/bytedance-volcano-engine-agent-autumn-first-round-2923108/",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["上下文", "截断", "压缩", "预算"]
+    },
+    {
+      "id": "memory-stale-conclusion",
+      "rolePack": "agent",
+      "topic": "memory",
+      "kind": "principle",
+      "question": "长期记忆里存了过时结论，被反复引用，怎么发现并纠正这种“记忆污染”？",
+      "followups": [
+        "记忆条目要不要带时间戳和来源？",
+        "冲突时以谁为准：新记忆、用户当前说法还是规则？",
+        "怎么防止错误记忆再次被写回去？"
+      ],
+      "expectedPoints": [
+        "记忆带来源、时间与置信度",
+        "冲突解决策略明确",
+        "有失效与复核机制",
+        "防止自我强化（写回前校验）"
+      ],
+      "sourceTitle": "公开资料汇编参考",
+      "sourceUrl": "https://zchary1106.github.io/agent-interview-hub/question-signals.html",
+      "evidenceLevel": "edited",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-02-17",
+      "revision": 2,
+      "tags": ["记忆污染", "过时", "冲突", "复核"]
+    },
+    {
+      "id": "memory-large-tool-result",
+      "rolePack": "agent",
+      "topic": "memory",
+      "kind": "incident",
+      "question": "工具返回了几十万字符的结果，你怎么处理？请说清分页、落盘、引用和回灌策略。",
+      "followups": [
+        "落盘后模型怎么知道有哪些片段、怎么按需取？",
+        "截断时保留头尾还是中间？依据是什么？",
+        "这份中间产物存在哪、保留多久、怎么清理？"
+      ],
+      "expectedPoints": [
+        "不把全文塞回 prompt",
+        "有落盘、索引与按需读取的机制",
+        "截断策略与任务相关",
+        "有生命周期与清理"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://interviewx.cn/interview/2056",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["大结果", "分页", "落盘", "引用", "上下文"]
+    },
+    {
+      "id": "memory-compression-failure",
+      "rolePack": "agent",
+      "topic": "memory",
+      "kind": "incident",
+      "question": "假设一次会话压缩失真，导致系统做错了任务。你会怎么发现问题、恢复任务，并判断什么时候需要回滚？",
+      "followups": [
+        "恢复时你重放哪些东西？从哪一层状态开始？",
+        "怎么判断是压缩丢了信息，而不是模型本身能力不足？",
+        "事后加了什么保护？"
+      ],
+      "expectedPoints": [
+        "有具体失真表现（约束丢失、指代错乱、数字错误）",
+        "恢复路径明确（重放、重新拉取原文）",
+        "区分压缩与模型能力",
+        "有预防机制"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/917353328109944832",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 3,
+      "tags": ["压缩", "失真", "恢复", "incident"]
+    },
+    {
+      "id": "reliability-cost-latency",
+      "rolePack": "agent",
+      "topic": "reliability",
+      "kind": "principle",
+      "question": "一个 Agent 请求的 token 成本、延迟和并发容量，你怎么估算？给一组你项目里的真实数字。",
+      "followups": [
+        "多轮工具调用下，成本是怎么累积的？",
+        "P95 延迟里模型、工具、排队各占多少？",
+        "降本你优先动哪一层，为什么？"
+      ],
+      "expectedPoints": [
+        "有单请求 token 与延迟分解",
+        "知道多轮调用的放大效应",
+        "能区分模型、工具、排队耗时",
+        "降本手段与质量影响对应"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/942593751954776064",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["成本", "延迟", "并发", "容量"]
+    },
+    {
+      "id": "reliability-degrade-incident",
+      "rolePack": "agent",
+      "topic": "reliability",
+      "kind": "incident",
+      "question": "讲一次依赖故障（模型限流、工具超时、下游挂掉）导致的连锁问题：你怎么止损，降级方案是什么？",
+      "followups": [
+        "熔断阈值怎么定？恢复是自动还是人工？",
+        "降级后用户体验变成什么样？有没有告知？",
+        "事后复盘改了什么，怎么验证有效？"
+      ],
+      "expectedPoints": [
+        "有具体故障链",
+        "止损动作明确（熔断、缓存、排队、人工）",
+        "降级有用户可见的说明",
+        "复盘产出可验证的改动"
+      ],
+      "sourceTitle": "公开资料汇编参考",
+      "sourceUrl": "https://web.reeddaily.com/posts/653181",
+      "evidenceLevel": "edited",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-02-17",
+      "revision": 2,
+      "tags": ["降级", "熔断", "故障", "incident"]
+    },
+    {
+      "id": "reliability-success-rate",
+      "rolePack": "agent",
+      "topic": "reliability",
+      "kind": "evaluation",
+      "question": "任务成功率怎么定义和统计？哪些算成功、哪些算部分成功，争议怎么处理？",
+      "followups": [
+        "自动化判定和人工判定怎么结合？",
+        "成功率的分母是什么：请求、会话还是任务？",
+        "不同任务难度混在一起统计，会不会失真？"
+      ],
+      "expectedPoints": [
+        "成功率有可执行判定规则",
+        "区分完全成功、部分成功与失败",
+        "分母口径明确",
+        "按任务类型分层统计"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/941713098040221696",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["成功率", "指标", "判定", "统计"]
+    },
+    {
+      "id": "safety-prompt-injection",
+      "rolePack": "agent",
+      "topic": "reliability",
+      "kind": "evaluation",
+      "question": "提示注入和工具越权你怎么测？请给出你验证过的攻击样例和防护措施。",
+      "followups": [
+        "间接注入（文档、网页、工具返回）你怎么防？",
+        "防护放在提示词还是执行层？模型能否绕过？",
+        "生成代码的沙箱怎么隔离？"
+      ],
+      "expectedPoints": [
+        "区分直接注入与间接注入",
+        "防护在执行层（权限、白名单、沙箱）",
+        "有可复用的测试样例集",
+        "知道提示词防护不能作为唯一防线"
+      ],
+      "sourceTitle": "公开资料汇编参考",
+      "sourceUrl": "https://leetcode.cn/discuss/post/QFqU0R/",
+      "evidenceLevel": "edited",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-02-17",
+      "revision": 2,
+      "tags": ["提示注入", "越权", "沙箱", "安全", "评测"]
+    },
+    {
+      "id": "reliability-offline-eval",
+      "rolePack": "agent",
+      "topic": "reliability",
+      "kind": "evaluation",
+      "question": "离线评测集多少条、怎么覆盖、谁标注、失败 case 怎么回流成回归集？",
+      "followups": [
+        "覆盖度你怎么衡量，漏了哪类任务你怎么发现？",
+        "标注人员不懂业务怎么办？",
+        "回归集越来越大，跑一次成本怎么控？"
+      ],
+      "expectedPoints": [
+        "规模与覆盖维度明确",
+        "标注有规范与交叉校验",
+        "失败回流有流程",
+        "有分层回归（快速集与全量集）"
+      ],
+      "sourceTitle": "公开资料汇编参考",
+      "sourceUrl": "https://zchary1106.github.io/agent-interview-hub/question-signals.html",
+      "evidenceLevel": "edited",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-02-17",
+      "revision": 2,
+      "tags": ["评测集", "标注", "回归", "覆盖"]
+    },
+    {
+      "id": "shared-project-overview",
+      "rolePack": "shared",
+      "topic": "project-general",
+      "kind": "project",
+      "question": "用三分钟介绍你最近一个最有技术含量的项目：业务问题、你的角色、关键设计和一个能证明效果的证据。",
+      "followups": [
+        "这个项目里最难的技术决策是什么？你当时有哪些备选？",
+        "如果重做一次，你会改哪一处？",
+        "团队其他人怎么评价你的贡献？"
+      ],
+      "expectedPoints": [
+        "结构清晰：问题、方案、结果",
+        "个人贡献具体",
+        "有可验证的结果（数据、上线情况）",
+        "能反思取舍"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/941632179652599808",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["项目", "贡献", "复盘"]
+    },
+    {
+      "id": "shared-behavioral-conflict",
+      "rolePack": "shared",
+      "topic": "behavioral",
+      "kind": "behavioral",
+      "question": "讲一次你和同事或上级在技术方案上分歧很大的经历：分歧点是什么，你怎么推进，最后结果如何？",
+      "followups": [
+        "如果对方是更资深的人，你的做法会变吗？",
+        "有没有你事后承认对方是对的情况？",
+        "这件事之后你改变了什么工作方式？"
+      ],
+      "expectedPoints": [
+        "分歧具体到技术取舍，不是人际情绪",
+        "推进方式包含数据、原型或小范围验证",
+        "结果诚实，包含自己判断失误的可能",
+        "有沉淀下来的方法"
+      ],
+      "sourceTitle": "内部通用训练题（editorial，无外部来源）",
+      "sourceUrl": "",
+      "evidenceLevel": "editorial",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-11-17",
+      "revision": 1,
+      "tags": ["协作", "冲突", "沟通", "行为"]
+    },
+    {
+      "id": "shared-behavioral-failure",
+      "rolePack": "shared",
+      "topic": "behavioral",
+      "kind": "behavioral",
+      "question": "如果你负责过一项未达到预期的工作，可以讲讲你当时的判断、实际影响和后续改进。如果没有类似经历，可以说说你会怎样复盘一次未达到预期的工作。",
+      "followups": [
+        "当时有没有更早的信号被你忽略？",
+        "你怎么向受影响的人交代？",
+        "这件事对你的工作习惯有什么长期影响？"
+      ],
+      "expectedPoints": [
+        "承认自己的判断责任",
+        "能指出被忽略的早期信号",
+        "处理后果的方式具体",
+        "有可观察的行为改变"
+      ],
+      "sourceTitle": "内部通用训练题（editorial，无外部来源）",
+      "sourceUrl": "",
+      "evidenceLevel": "editorial",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-11-17",
+      "revision": 2,
+      "tags": ["失败", "复盘", "行为", "成长"]
+    },
+    {
+      "id": "shared-fundamentals-cache",
+      "rolePack": "shared",
+      "topic": "fundamentals",
+      "kind": "principle",
+      "question": "一个接口的 P99 突然从几十毫秒涨到秒级，你会按什么顺序排查？请说清每一步能排除什么。",
+      "followups": [
+        "怎么区分是自身代码、依赖服务还是资源瓶颈？",
+        "缓存击穿、雪崩、穿透分别对应什么现象和处理？",
+        "如果是数据库慢查询，你怎么定位到具体 SQL？"
+      ],
+      "expectedPoints": [
+        "分层排查：入口指标、依赖、资源、代码",
+        "每步有可观测依据",
+        "缓存三类问题能区分",
+        "慢查询定位手段具体"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/941632179652599808",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["缓存", "性能", "排查", "基础"]
+    },
+    {
+      "id": "shared-fundamentals-debug",
+      "rolePack": "shared",
+      "topic": "fundamentals",
+      "kind": "incident",
+      "question": "讲一次线上故障排查：从发现、定位到恢复，你做了哪些动作，哪些是有效的、哪些是白费力气？",
+      "followups": [
+        "你当时最先怀疑什么？为什么？",
+        "监控和日志缺了什么，事后补了什么？",
+        "怎么避免同类故障再次发生？"
+      ],
+      "expectedPoints": [
+        "时间线清晰",
+        "定位手段有依据",
+        "区分有效与无效动作",
+        "有监控或流程改进"
+      ],
+      "sourceTitle": "内部通用训练题（editorial，无外部来源）",
+      "sourceUrl": "",
+      "evidenceLevel": "editorial",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-11-17",
+      "revision": 1,
+      "tags": ["故障", "排查", "监控", "基础"]
+    },
+    {
+      "id": "shared-project-tradeoff",
+      "rolePack": "shared",
+      "topic": "project-general",
+      "kind": "evaluation",
+      "question": "选一个你做过的技术选型：当时有哪些选项，你用哪些标准做的决定，事后怎么验证这个决定对不对？",
+      "followups": [
+        "如果预算减半，你的选择会变吗？",
+        "选型的隐性成本（学习、维护、招聘）你考虑了吗？",
+        "有没有选错、后来替换掉的经历？"
+      ],
+      "expectedPoints": [
+        "选项与标准具体",
+        "考虑非功能因素（成本、维护、团队能力）",
+        "有事后验证",
+        "能承认选错"
+      ],
+      "sourceTitle": "公开资料汇编参考",
+      "sourceUrl": "https://web.reeddaily.com/posts/653181",
+      "evidenceLevel": "edited",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-02-17",
+      "revision": 2,
+      "tags": ["选型", "取舍", "验证", "项目"]
+    },
+    {
+      "id": "shared-project-delivery",
+      "rolePack": "shared",
+      "topic": "project-general",
+      "kind": "project",
+      "question": "挑一个你独立负责到底的模块，说说你是从哪一步接手的、最后怎么算交付完成的？",
+      "followups": [
+        "交付前你用什么证明它是可用的？",
+        "这个模块上线后出过一次问题吗？你当时怎么收尾？",
+        "如果让你重做一次，哪一步你会换做法？"
+      ],
+      "expectedPoints": [
+        "能说清接手时已有的边界与上下游依赖",
+        "有明确的验收标准与上线检查项",
+        "出问题时有回滚、止血与复盘动作",
+        "能指出一处具体的改进点"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/941632179652599808",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["项目", "交付", "验收", "协作"]
+    },
+    {
+      "id": "shared-fundamentals-idempotency",
+      "rolePack": "shared",
+      "topic": "fundamentals",
+      "kind": "principle",
+      "question": "一个下单或支付接口被用户连点、或者客户端超时重试，你怎么保证不重复扣款？",
+      "followups": [
+        "幂等键在哪一层生成、存在哪、保留多久？",
+        "两个相同请求同时到达时，你靠什么互斥？",
+        "状态机里哪些状态可以重入、哪些必须直接拒绝？"
+      ],
+      "expectedPoints": [
+        "幂等键由客户端或服务端统一生成并带唯一约束",
+        "并发靠唯一索引或分布式锁兜住",
+        "区分可重入状态与必须拒绝的状态",
+        "重试有退避策略并配合对账兜底"
+      ],
+      "sourceTitle": "公开面经参考",
+      "sourceUrl": "https://www.nowcoder.com/discuss/941632179652599808",
+      "evidenceLevel": "first_hand",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-05-17",
+      "revision": 2,
+      "tags": ["幂等", "支付", "并发", "基础"]
+    },
+    {
+      "id": "shared-incident-dependency-timeout",
+      "rolePack": "shared",
+      "topic": "fundamentals",
+      "kind": "incident",
+      "question": "假设下游依赖响应变慢，导致你负责的服务出现大量请求失败。你会怎样先稳住服务，再定位故障？",
+      "followups": [
+        "限流、熔断、收紧超时，你会先动哪个，依据是什么？",
+        "降级之后返回给用户什么，怎么和产品对齐？",
+        "事后怎么确认雪崩链路确实由它引起？"
+      ],
+      "expectedPoints": [
+        "先止损再定位，顺序和依据都说清",
+        "降级有明确兜底返回与对外告知",
+        "用依赖耗时分布与错误率确认链路",
+        "事后补容量评估与重试风暴治理"
+      ],
+      "sourceTitle": "内部通用训练题（editorial，无外部来源）",
+      "sourceUrl": "",
+      "evidenceLevel": "editorial",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-11-17",
+      "revision": 2,
+      "tags": ["故障", "依赖", "降级", "稳定性"]
+    },
+    {
+      "id": "shared-evaluation-self-review",
+      "rolePack": "shared",
+      "topic": "project-general",
+      "kind": "evaluation",
+      "question": "如果让你给自己的一次交付打分，你会用哪几个维度、各拿什么证据支撑？",
+      "followups": [
+        "你说它好，有具体数字或对比吗？",
+        "哪个维度你自己也不满意，当时为什么没做？",
+        "换个人来评，结论会和你一样吗？"
+      ],
+      "expectedPoints": [
+        "维度明确：正确性、性能、可维护性、协作",
+        "每个结论都挂得上证据",
+        "能主动承认一处不足并解释取舍",
+        "考虑他人视角下结论的可验证性"
+      ],
+      "sourceTitle": "内部通用训练题（editorial，无外部来源）",
+      "sourceUrl": "",
+      "evidenceLevel": "editorial",
+      "collectedAt": "2026-11-17",
+      "reviewedAt": "2026-11-17",
+      "reviewAfter": "2027-11-17",
+      "revision": 1,
+      "tags": ["自评", "复盘", "质量", "行为"]
+    }
+  ]
+}

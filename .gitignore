@@ -1,0 +1,11 @@
+node_modules/
+*.tgz
+.env
+.env.*
+*.sqlite
+*.sqlite-*
+*.log
+/data/
+/sessions/
+/preparations/
+lib/vendor/live2dcubismcore*.js

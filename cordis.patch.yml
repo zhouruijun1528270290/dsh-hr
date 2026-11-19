@@ -1,0 +1,4 @@
+# dsh-hr-interview bundle patch；id 必须与 index.js 的 name 一致。
+- insert:
+    - id: hr-interview
+      name: dsh-hr-interview

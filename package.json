@@ -1,0 +1,61 @@
+{
+  "name": "dsh-hr-interview",
+  "version": "0.1.0",
+  "repository": { "type": "git", "url": "git+https://github.com/zhouruijun1528270290/dsh-hr.git" },
+  "description": "DSH 原生 HR 面试训练：材料证据、动态追问、直接语音输入、复盘与跨天回炉",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "lib",
+    "src/windows-camera.cs",
+    "scripts/build-windows-camera.ps1",
+    "docs",
+    "assets/backgrounds",
+    "cordis.patch.yml",
+    "locale",
+    "icon.svg",
+    "THIRD_PARTY_NOTICES.md",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.js",
+    "check": "node scripts/check-build.mjs && node --test test/*.test.js",
+    "check:build": "node scripts/check-build.mjs",
+    "prepack": "npm run check"
+  },
+  "engines": {
+    "dsh": ">=0.2.0-rc.1 <0.3.0-0",
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-api-gateway",
+        "@deepseek-ai/dsh-client-locale"
+      ],
+      "platform": "web"
+    }
+  },
+  "icon": "icon.svg",
+  "keywords": ["dsh", "dsh-plugin", "interview", "speech", "training"],
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "31.0.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}
