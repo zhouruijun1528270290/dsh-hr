@@ -1441,7 +1441,7 @@ const PROBE_EVALUATION = {
   overallScore: 72,
   priorities: ['每个项目结论补一个数字'],
   performance: { latencyP75Ms: 900, latencyP95Ms: 1500, oralAcceptanceEligible: true },
-  dimensions: [{ key: '结构', evaluated: true, score: 3, diagnosis: '用 STAR 讲了背景', improvement: '先给结论再铺细节', evidenceTurnIds: ['t-hr-1'] }],
+  dimensions: [{ key: 'structure', evaluated: true, score: 3, diagnosis: '用 STAR 讲了背景', improvement: '先给结论再铺细节', evidenceTurnIds: ['t-hr-1'] }],
   questionReviews: [{ questionId: 'q-1', issues: ['缺少指标'], rewrite: '把「提升效率」换成「把 P95 从 1.2s 压到 400ms」', drill: '重讲一遍带数字' }],
   consistencyIssues: [],
 }
@@ -1594,14 +1594,45 @@ test('复盘报告按真实题干合并追问，并在分项评分中展示原�
   try {
     await harness.openHistory()
     const report = reviewRoot(harness)
-    assert.match(report.querySelector('.hri-review-dimension').textContent, /回答结构/)
-    assert.match(report.querySelector('.hri-review-dimension blockquote').textContent, /我先检查接口各阶段的耗时/)
-    assert.equal(report.querySelector('.hri-review-dimension meter').value, 72)
+    const structure = [...report.querySelectorAll('.hri-review-dimension')].find((row) => row.textContent.includes('回答结构'))
+    assert.match(structure.querySelector('blockquote').textContent, /我先检查接口各阶段的耗时/)
+    assert.equal(structure.querySelector('meter').value, 72)
     assert.equal(report.querySelectorAll('.hri-review-question').length, 1)
     assert.match(report.querySelector('.hri-review-question > summary').textContent, /接口变慢时/)
     assert.match(report.querySelector('.hri-review-question').textContent, /你怎么排除下游故障/)
     assert.doesNotMatch(report.textContent, /q-1|t-cand-1|missing/)
   } finally { await harness.close() }
+})
+
+test('历史复盘按实际分项重算覆盖率和参考分', async (t) => {
+  const four = ['relevance', 'accuracy', 'evidence', 'structure'].map((key, index) => ({
+    key, score: [80, 90, 70, 60][index], diagnosis: '保留已有反馈',
+  }))
+  const scenarios = [
+    { dimensions: four, count: 4, overallScore: 99, expectedScore: null },
+    { dimensions: [...four, { key: 'expression', score: 0 }], count: 5, overallScore: 99, expectedScore: 60 },
+  ]
+  for (const { dimensions, count, overallScore, expectedScore } of scenarios) {
+    const evaluation = { ...PROBE_EVALUATION, dimensions, overallScore }
+    const harness = await openInterviewFromHistory({ status: 'completed', evaluation })
+    if (!harness) return skipNoReactDom(t)
+    try {
+      await harness.openHistory()
+      const report = reviewRoot(harness)
+      assert.equal(report.querySelector('[data-hri-review-coverage]').textContent, `已评 ${count}/7 项`)
+      const rows = [...report.querySelectorAll('.hri-review-dimension')]
+      assert.equal(rows.length, 7)
+      assert.equal(rows.filter((row) => row.textContent.includes('未评估')).length, 7 - count)
+      const score = report.querySelector('.hri-review-score')
+      if (expectedScore === null) assert.equal(score, null)
+      else {
+        assert.match(score.getAttribute('aria-label'), /训练参考分 60 分/)
+        assert.equal(rows.find((row) => row.textContent.includes('表达清晰度')).querySelector('meter').value, 0)
+      }
+      assert.match(report.textContent, /保留已有反馈/)
+      assert.deepEqual(harness.evaluateCalls, [])
+    } finally { await harness.close() }
+  }
 })
 
 test('复盘独立视图：completed + no_content 明确说「没有有效回答，未生成复盘」', async (t) => {

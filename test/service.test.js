@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { InterviewStore } from '../lib/store.js'
@@ -148,16 +148,69 @@ test('interrupted generating and processing states can be retried after reopen',
     bundle = await service.control(id, 'retry'); assert.equal(bundle.session.status, 'waiting_for_answer')
   } finally { await rm(root, { recursive: true, force: true }) }
 })
-test('materials are required and unevaluated dimensions do not depress the score', async () => {
+test('materials are required and a partially evaluated report can have no overall score', async () => {
   const { root, service, store } = await fixture()
   try {
     await store.saveMaterials({ role: '', resume: '', jd: '', projectNotes: '' })
     await assert.rejects(service.start({ mode: 'standard', persona: 'professional', durationMinutes: 15, inputMode: 'text' }), /简历和岗位 JD/)
     const session = { sessionId: 'hr-test', oralAcceptanceEligible: true }
     const evaluation = normalizeEvaluation({ dimensions: [{ key: 'evidence', score: 80 }] }, session, [])
-    assert.equal(evaluation.overallScore, 80); assert.equal(evaluation.dimensions.find((item) => item.key === 'accuracy').evaluated, false)
+    assert.equal(evaluation.dimensionsEvaluated, 1)
+    assert.equal(evaluation.dimensionsTotal, 7)
+    assert.equal(evaluation.overallScore, null)
+    assert.equal(evaluation.dimensions.find((item) => item.key === 'accuracy').evaluated, false)
   } finally { await rm(root, { recursive: true, force: true }) }
 })
+test('review scores need five dimensions, keep explicit zero and round the average only', () => {
+  const base = [{ key: 'relevance', score: 80 }, { key: 'accuracy', score: 90 },
+    { key: 'evidence', score: 70 }, { key: 'structure', score: 60 }]
+  const low = normalizeEvaluation({ dimensions: [
+    ...base, { key: 'expression', score: '0x50' }, { key: 'consistency', score: false }, { key: 'presence', score: '   ' },
+  ] }, {}, [])
+  assert.equal(low.dimensionsEvaluated, 4)
+  assert.equal(low.overallScore, null)
+  assert.deepEqual(low.dimensions.slice(4).map(({ score, evaluated }) => [score, evaluated]), [[null, false], [null, false], [null, false]])
+  const eligible = normalizeEvaluation({ dimensions: [
+    ...base, { key: 'expression', score: '0' }, { key: 'consistency', score: null }, { key: 'presence', score: 100, evaluated: false },
+  ] }, {}, [])
+  assert.equal(eligible.dimensionsEvaluated, 5)
+  assert.equal(eligible.overallScore, 60)
+  assert.equal(eligible.dimensions[4].score, 0)
+  assert.equal(eligible.dimensions[4].evaluated, true)
+  const fractional = normalizeEvaluation({ dimensions: base.map((item) => ({ ...item, score: 82.49 })).concat({ key: 'expression', score: 83.1 }) }, {}, [])
+  assert.equal(fractional.overallScore, 83)
+})
+test('旧的明确零分立即进入待回炉，缺分不视为零，新评分按原有间隔排程', async (t) => {
+  const { root, service, store } = await fixture()
+  t.after(() => rm(root, { recursive: true, force: true }))
+  const opened = await service.start({ mode: 'standard', persona: 'professional', durationMinutes: 15, inputMode: 'text' })
+  const id = opened.session.sessionId
+  const old = [
+    { id: 'kp-future', title: '排期知识点', mastery: 4, nextReviewAt: '2099-01-01T00:00:00Z' },
+    { id: 'kp-unknown', title: '缺失等级', nextReviewAt: null },
+    { id: 'kp-old-zero', title: '旧零分知识点', mastery: 0, nextReviewAt: null, originSessionId: id },
+  ]
+  await writeFile(join(root, 'knowledge.json'), JSON.stringify(old))
+  const listed = await service.list()
+  assert.equal(listed.knowledge[0].id, 'kp-old-zero')
+  assert.ok(Date.parse(listed.knowledge[0].nextReviewAt) <= Date.parse(listed.now))
+  assert.equal(listed.knowledge.find((item) => item.id === 'kp-unknown').nextReviewAt, null)
+  assert.equal(listed.knowledge.find((item) => item.id === 'kp-future').nextReviewAt, old[0].nextReviewAt)
+  const drill = await service.createDrill(id, 'kp-old-zero')
+  assert.equal(drill.session.mode, 'drill')
+  assert.equal(drill.session.targetKnowledgePointId, 'kp-old-zero')
+  const result = normalizeEvaluation({ knowledgePoints: [{ id: 'kp-new-zero', mastery: 0 }, { id: 'kp-one', mastery: 1 }, { id: 'kp-no-value' }] }, { sessionId: id }, [])
+  const at = new Date('2026-11-19T00:00:00Z')
+  const scheduled = applyKnowledge(old, result, at)
+  assert.equal(scheduled.find((item) => item.id === 'kp-new-zero').nextReviewAt, at.toISOString())
+  assert.equal(scheduled.find((item) => item.id === 'kp-one').nextReviewAt, '2026-11-19T01:00:00.000Z')
+  assert.equal(scheduled.find((item) => item.id === 'kp-no-value').nextReviewAt, null)
+  await store.saveKnowledge(scheduled)
+  const queue = JSON.parse(await readFile(join(root, 'review-queue.json'), 'utf8'))
+  assert.equal(queue.some((item) => item.id === 'kp-old-zero'), true)
+  assert.equal(queue.some((item) => item.id === 'kp-unknown'), false)
+})
+
 test('typed descriptors match every public Host method', async () => {
   const { root, service } = await fixture()
   try {

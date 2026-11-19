@@ -1802,7 +1802,9 @@ function ReviewEvidence({ turns, label }) {
 
 function EvaluationView({ evaluation, turns }) {
   const priorities = reviewList(evaluation.priorities)
-  const dimensions = reviewList(evaluation.dimensions)
+  const storedDimensions = reviewList(evaluation.dimensions)
+  const dimensions = REVIEW_DIMENSION_KEYS.map((key) => storedDimensions.find((item) => item?.key === key) || { key })
+  const { dimensionsEvaluated, dimensionsTotal, overallScore } = summarizeReviewScores(dimensions)
   const consistencyIssues = reviewList(evaluation.consistencyIssues)
   const byTurnId = new Map(turns.map((turn) => [turn.id, turn]))
   const questionGroups = new Map()
@@ -1819,28 +1821,33 @@ function EvaluationView({ evaluation, turns }) {
     reviews.set(item.questionId, item)
   }
   const questionIds = [...new Set([...questionGroups.keys(), ...reviews.keys()])]
-  const score = evaluation.overallScore
   const performance = evaluation.performance
   const latency = performance?.latencyCount > 0 ? `回答处理耗时 P75 ${performance.latencyP75Ms} ms · P95 ${performance.latencyP95Ms} ms` : ''
   return h(React.Fragment, null,
     h('div', { className: priorities.length ? 'hri-review-overview' : undefined },
       h('section', { className: 'hri-card hri-review-summary' },
-        h('div', { className: 'hri-review-summary-head' }, h('h3', { className: 'hri-studio-title' }, '本场结论'),
-          Number.isFinite(score) && h('strong', { className: 'hri-review-score', 'aria-label': `综合得分 ${score} 分，满分 100 分` }, score, h('small', { 'aria-hidden': 'true' }, ' / 100'))),
+        h('div', { className: 'hri-review-summary-head' },
+          h('div', null, h('h3', { className: 'hri-studio-title' }, '本场结论'),
+            h('p', { className: 'hri-studio-meta', 'data-hri-review-coverage': 'true' }, `已评 ${dimensionsEvaluated}/${dimensionsTotal} 项`)),
+          overallScore !== null && h('div', null,
+            h('div', { className: 'hri-studio-meta' }, '训练参考分'),
+            h('strong', { className: 'hri-review-score', 'aria-label': `训练参考分 ${overallScore} 分，满分 100 分` },
+              overallScore, h('small', { 'aria-hidden': 'true' }, ' / 100')))),
         h('p', null, evaluation.summary || '本场已生成复盘。'),
         latency && h('p', { className: 'hri-studio-meta' }, latency)),
       priorities.length > 0 && h('section', { className: 'hri-card hri-review-priorities' },
         h('h3', { className: 'hri-studio-title' }, '下次优先练习'),
         h('ol', null, priorities.map((item, index) => h('li', { key: index }, item))))),
-    dimensions.length > 0 && h('section', { className: 'hri-card' },
+    h('section', { className: 'hri-card' },
       h('h3', { className: 'hri-studio-title' }, '分项表现'),
       h('div', { className: 'hri-score hri-review-dimensions' }, dimensions.map((item) => {
         const label = REVIEW_DIMENSIONS[item.key] || item.key
-        const scored = item.evaluated && Number.isFinite(item.score)
+        const score = reviewDimensionScore(item)
+        const scored = score !== null
         const evidence = reviewList(item.evidenceTurnIds).map((id) => byTurnId.get(id)).filter((turn) => turn?.text)
         return h('article', { className: 'hri-review-dimension', key: item.key },
-          h('div', { className: 'hri-top' }, h('strong', null, label), h('b', null, scored ? `${item.score} 分` : '未评估')),
-          scored && h('meter', { min: 0, max: 100, value: item.score, 'aria-label': `${label}得分` }),
+          h('div', { className: 'hri-top' }, h('strong', null, label), h('b', null, scored ? `${score} 分` : '未评估')),
+          scored && h('meter', { min: 0, max: 100, value: score, 'aria-label': `${label}得分` }),
           item.diagnosis && h('p', null, item.diagnosis),
           item.improvement && h('p', { className: 'hri-studio-meta' }, item.improvement),
           h(ReviewEvidence, { turns: evidence, label: '查看评估依据' }))
@@ -1960,7 +1967,7 @@ function HistoryView({ data, onOpen, onDrill }) {
             return h('div', { className: 'hri-knowledge', key: item.id },
               h('div', { className: 'hri-record-copy' },
                 h('strong', null, item.title),
-                h('small', { className: 'hri-studio-meta' }, `掌握度 ${item.mastery}/4 · ${item.nextReviewAt ? new Date(item.nextReviewAt).toLocaleString() : '暂不排程'}`)),
+                h('small', { className: 'hri-studio-meta' }, `${item.mastery == null ? '掌握度未评估' : `掌握度 ${item.mastery}/4`} · ${item.nextReviewAt ? new Date(item.nextReviewAt).toLocaleString() : '暂不排程'}`)),
               (due || item.originSessionId) && h('div', { className: 'hri-record-actions' },
                 due && h('span', { className: 'hri-record-badge', 'data-tone': 'due' }, '待回炉'),
                 item.originSessionId && h(Button, { onClick: () => onDrill(item.originSessionId, item.id) }, '回炉')))

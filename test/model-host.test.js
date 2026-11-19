@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { ModelGateway } from '../lib/model-gateway.js'
+import { normalizeEvaluation } from '../lib/evaluation.js'
 
 test('压力面的模型提示优先检验证据和反例，标准面沿用普通追问提示', async () => {
   const gateway = new ModelGateway()
@@ -65,6 +66,61 @@ const llmFrom = (outputs, calls) => ({
       yield { type: 'finish', reason: { kind: 'stop' } }
     })()
   },
+})
+
+test('复盘完整输入超过 40 条的记录且可引用第一条真实回答', async () => {
+  const gateway = new ModelGateway()
+  const turns = Array.from({ length: 46 }, (_, index) => ({
+    id: `t-${index + 1}`, sequence: index + 1, questionId: `q-${Math.floor(index / 2) + 1}`,
+    speaker: index % 2 ? 'candidate' : 'hr', kind: index % 2 ? 'answer' : 'main_question', text: `短内容 ${index + 1}`,
+  }))
+  let called = 0
+  gateway.complete = async (_system, prompt) => {
+    called++
+    const material = prompt.split('\n【完整面试记录】\n')[1].split('\n现在只做复盘教学')[0]
+    assert.deepEqual(material.split('\n').map((line) => JSON.parse(line).id), turns.map((turn) => turn.id))
+    return { dimensions: [{ key: 'evidence', score: 80, evidenceTurnIds: ['t-2', 't-24', 't-46', 't-1', 'fake'] }] }
+  }
+  const result = await gateway.evaluate({ turns, materials: {}, knowledge: [] })
+  const evaluation = normalizeEvaluation(result, {}, turns)
+  assert.deepEqual(evaluation.dimensions.find((dimension) => dimension.key === 'evidence').evidenceTurnIds, ['t-2', 't-24', 't-46'])
+  assert.equal(called, 1)
+})
+
+test('分段复盘逐题保留原回答 ID，超长回答可无损重组，汇总保留各段引用', async () => {
+  const gateway = new ModelGateway()
+  const turns = Array.from({ length: 16 }, (_, index) => [
+    { id: `ask-${index}`, questionId: `q-${index}`, speaker: 'hr', kind: 'main_question', text: `问题 ${index}` },
+    { id: `answer-${index}`, questionId: `q-${index}`, speaker: 'candidate', kind: 'answer',
+      text: index === 7 ? '开头🙂'.repeat(4500) + '最后一段' : `第 ${index} 段，` + '细节'.repeat(450) },
+  ]).flat().map((turn, index) => ({ ...turn, sequence: index + 1 }))
+  const markers = ['answer-0', 'answer-7', 'answer-15']
+  const received = []
+  let summarized = false
+  gateway.complete = async (_system, prompt) => {
+    if (prompt.startsWith('【分段提取复盘证据】')) {
+      const input = prompt.split('\n').slice(2, -1)
+      assert.ok(Buffer.byteLength(input.join('\n')) <= 24 * 1024)
+      const rows = input.map((line) => JSON.parse(line))
+      assert.ok(rows.filter((row) => row.speaker === 'candidate').length <= 10)
+      received.push(...rows)
+      return { observations: rows.filter((row) => markers.includes(row.id)).map((row) => ({
+        turnId: row.id, finding: row.fragment ? `片段 ${row.fragment}` : '有可复核的依据', dimensionKeys: ['evidence'],
+      })).concat({ turnId: 'fake', finding: '不在会话里', dimensionKeys: ['evidence'] }) }
+    }
+    assert.ok(received.length > turns.length)
+    const observations = JSON.parse(prompt.split('\n【各段复盘证据】\n')[1].split('\n')[0])
+    assert.deepEqual(observations.map((item) => item.turnId), markers)
+    assert.match(observations[1].finding, /片段 1/)
+    summarized = true
+    return { dimensions: [{ key: 'evidence', score: 85, evidenceTurnIds: ['answer-15'] }] }
+  }
+  const result = await gateway.evaluate({ turns, materials: {}, knowledge: [] })
+  assert.equal(summarized, true)
+  assert.deepEqual([...new Set(received.map((row) => row.id))], turns.map((turn) => turn.id))
+  for (const turn of turns) assert.equal(received.filter((row) => row.id === turn.id).map((row) => row.text).join(''), turn.text)
+  const evidence = normalizeEvaluation(result, {}, turns).dimensions.find((item) => item.key === 'evidence').evidenceTurnIds
+  assert.deepEqual(new Set(evidence), new Set(markers))
 })
 
 test('Host model uses the signed-in account and assembles streamed JSON', async () => {

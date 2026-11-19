@@ -872,6 +872,38 @@ test('saveSourceSettings shares the prepare lock and never closes the bank mid-p
   assert.equal((await service.sourceSettings()).msyDir, dirB)
 })
 
+test('同一 Host 由题库 A 切到 B 和停用后都能重新准备', async (t) => {
+  const { root, service } = await fixture(t, null, { roleResearch: createRoleResearch(async () => new Map()) })
+  const createSource = async (name, titles) => {
+    const dir = join(root, name)
+    await mkdir(join(dir, 'data'), { recursive: true })
+    await writeFile(join(dir, 'data', 'questions.ndjson'), titles.map((title, index) =>
+      JSON.stringify({ id: `${name}-${index}`, title, tagList: ['Agent'] })).join('\n') + '\n')
+    return dir
+  }
+  const dirA = await createSource('msy-a', [
+    'Agent 甲库如何处理并发超时？', 'Agent 甲库如何处理状态摘要？',
+    'Agent 甲库如何检查工具输出？', 'Agent 甲库如何检查回放日志？',
+  ])
+  const dirB = await createSource('msy-b', ['Agent 乙库如何设置请求预算？'])
+  await service.saveSourceSettings({ msyDir: dirA })
+  const first = await service.prepareInterview({ durationMinutes: 15 })
+  assert.equal(first.sources.msyQuestions.imported, 4)
+  await service.saveSourceSettings({ msyDir: dirB })
+  assert.equal((await service.latestPreparation({ durationMinutes: 15 })).profileMatches, false)
+  await assert.rejects(service.start(options(first.preparationId)), { code: 'hr-interview/preparation-stale' })
+  const second = await service.prepareInterview({ durationMinutes: 15, refresh: true })
+  assert.equal(second.sources.msyQuestions.imported, 1)
+  const bank = await service.getMarketBank()
+  const imported = (await bank.listActive({ rolePack: 'agent', limit: 1000 })).filter((item) => item.sourceType === 'msy-question')
+  assert.deepEqual(imported.map((item) => item.question), ['Agent 乙库如何设置请求预算？'])
+  assert.notEqual(second.preparationId, first.preparationId)
+  await service.saveSourceSettings({ msyDir: '' })
+  const cleared = await service.prepareInterview({ durationMinutes: 15, refresh: true })
+  assert.equal(cleared.sources.msyQuestions.status, 'disabled')
+  assert.notEqual(cleared.preparationId, second.preparationId)
+})
+
 // ---------------------------------------- refresh 重试循环：跑满四次并留下最优解
 
 test('refresh retries the seed four times and keeps the best candidate instead of stopping at the first', async (t) => {
