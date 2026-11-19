@@ -79,6 +79,9 @@ test('复盘完整输入超过 40 条的记录且可引用第一条真实回答'
     called++
     const material = prompt.split('\n【完整面试记录】\n')[1].split('\n现在只做复盘教学')[0]
     assert.deepEqual(material.split('\n').map((line) => JSON.parse(line).id), turns.map((turn) => turn.id))
+    assert.match(prompt, /dimensions\[\]\.score 使用 0–100 分的百分制整数/)
+    assert.match(prompt, /证据不足或无法判断时返回 score: null/)
+    assert.match(prompt, /mastery 独立使用 0\/1\/2\/3\/4/)
     return { dimensions: [{ key: 'evidence', score: 80, evidenceTurnIds: ['t-2', 't-24', 't-46', 't-1', 'fake'] }] }
   }
   const result = await gateway.evaluate({ turns, materials: {}, knowledge: [] })
@@ -112,6 +115,8 @@ test('分段复盘逐题保留原回答 ID，超长回答可无损重组，汇�
     const observations = JSON.parse(prompt.split('\n【各段复盘证据】\n')[1].split('\n')[0])
     assert.deepEqual(observations.map((item) => item.turnId), markers)
     assert.match(observations[1].finding, /片段 1/)
+    assert.match(prompt, /dimensions\[\]\.score 使用 0–100 分的百分制整数/)
+    assert.match(prompt, /证据不足或无法判断时返回 score: null/)
     summarized = true
     return { dimensions: [{ key: 'evidence', score: 85, evidenceTurnIds: ['answer-15'] }] }
   }
